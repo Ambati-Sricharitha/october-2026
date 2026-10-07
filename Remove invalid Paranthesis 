@@ -1,0 +1,54 @@
+class Solution:
+    def removeInvalidParentheses(self, s):
+        ans = set()
+
+        def valid(x):
+            count = 0
+
+            for c in x:
+                if c == '(':
+                    count += 1
+                elif c == ')':
+                    count -= 1
+
+                    if count < 0:
+                        return False
+
+            return count == 0
+
+        def dfs(i, path, left, right):
+            if i == len(s):
+                if left == 0 and right == 0:
+                    x = ''.join(path)
+                    if valid(x):
+                        ans.add(x)
+                return
+
+            c = s[i]
+
+            # Remove current parenthesis
+            if c == '(' and left > 0:
+                dfs(i + 1, path, left - 1, right)
+
+            elif c == ')' and right > 0:
+                dfs(i + 1, path, left, right - 1)
+
+            # Keep current character
+            path.append(c)
+            dfs(i + 1, path, left, right)
+            path.pop()
+
+        left = right = 0
+
+        for c in s:
+            if c == '(':
+                left += 1
+            elif c == ')':
+                if left > 0:
+                    left -= 1
+                else:
+                    right += 1
+
+        dfs(0, [], left, right)
+
+        return list(ans)
