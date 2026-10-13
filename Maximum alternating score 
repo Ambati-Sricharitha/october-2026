@@ -1,0 +1,17 @@
+class Solution:
+    def maxAlternatingScore(self, nums: list[int]) -> int:
+        # Step 1: Get the squares of all numbers
+        squares = [x * x for x in nums]
+        
+        # Step 2: Sort the squares in ascending order
+        squares.sort()
+        
+        # Step 3: The first n // 2 smallest elements are subtracted
+        # The remaining largest elements are added
+        n = len(nums)
+        negative_count = n // 2
+        
+        negative_sum = sum(squares[:negative_count])
+        positive_sum = sum(squares[negative_count:])
+        
+        return positive_sum - negative_sum
