@@ -1,0 +1,65 @@
+class Solution:
+    def sumCounts(self, nums: List[int]) -> int:
+
+        MOD = 10**9 + 7
+        n = len(nums)
+        
+        # Segment tree storage: 4 * n is sufficient
+        tree_sum = [0] * (4 * n)
+        tree_sq = [0] * (4 * n)
+        lazy = [0] * (4 * n)
+        
+        def push_down(node, l, r):
+            if lazy[node] == 0:
+                return
+            val = lazy[node]
+            lazy[node] = 0
+            
+            mid = (l + r) // 2
+            left_len = mid - l + 1
+            right_len = r - mid
+            
+            # Update left child
+            tree_sq[2 * node] = (tree_sq[2 * node] + 2 * val * tree_sum[2 * node] + left_len * val * val) % MOD
+            tree_sum[2 * node] = (tree_sum[2 * node] + left_len * val) % MOD
+            lazy[2 * node] = (lazy[2 * node] + val) % MOD
+            
+            # Update right child
+            tree_sq[2 * node + 1] = (tree_sq[2 * node + 1] + 2 * val * tree_sum[2 * node + 1] + right_len * val * val) % MOD
+            tree_sum[2 * node + 1] = (tree_sum[2 * node + 1] + right_len * val) % MOD
+            lazy[2 * node + 1] = (lazy[2 * node + 1] + val) % MOD
+
+        def update(node, l, r, ql, qr, val):
+            if ql <= l and r <= qr:
+                length = r - l + 1
+                tree_sq[node] = (tree_sq[node] + 2 * val * tree_sum[node] + length * val * val) % MOD
+                tree_sum[node] = (tree_sum[node] + length * val) % MOD
+                lazy[node] = (lazy[node] + val) % MOD
+                return
+            
+            push_down(node, l, r)
+            mid = (l + r) // 2
+            if ql <= mid:
+                update(2 * node, l, mid, ql, qr, val)
+            if qr > mid:
+                update(2 * node + 1, mid + 1, r, ql, qr, val)
+                
+            tree_sum[node] = (tree_sum[2 * node] + tree_sum[2 * node + 1]) % MOD
+            tree_sq[node] = (tree_sq[2 * node] + tree_sq[2 * node + 1]) % MOD
+
+        total_ans = 0
+        last_seen = {}
+        
+        for i, num in enumerate(nums):
+            # Find the last time we saw this number
+            prev_idx = last_seen.get(num, -1)
+            
+            # Any subarray starting between (prev_idx + 1) and i gets a new unique element
+            update(1, 0, n - 1, prev_idx + 1, i, 1)
+            
+            # tree_sq[1] holds the sum of squares of distinct counts for all subarrays ending at index i
+            total_ans = (total_ans + tree_sq[1]) % MOD
+            last_seen[num] = i
+            
+        return total_ans
+        
