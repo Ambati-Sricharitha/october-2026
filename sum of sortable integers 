@@ -1,0 +1,42 @@
+class Solution:
+    def sumSortableK(self, nums: list[int]) -> int:
+        n = len(nums)
+        sorted_nums = sorted(nums)
+        
+        # Find all divisors of n
+        divisors = []
+        for i in range(1, int(n**0.5) + 1):
+            if n % i == 0:
+                divisors.append(i)
+                if i * i != n:
+                    divisors.append(n // i)
+        
+        ans = 0
+        
+        for k in divisors:
+            possible = True
+            for i in range(0, n, k):
+                subarray = nums[i:i+k]
+                target_subarray = sorted_nums[i:i+k]
+                
+                # Condition 1: Elements must match the sorted global positions
+                if sorted(subarray) != target_subarray:
+                    possible = False
+                    break
+                
+                # Condition 2: Must be a cyclic shift (at most 1 drop)
+                drops = 0
+                for j in range(k):
+                    if subarray[j] > subarray[(j + 1) % k]:
+                        drops += 1
+                        if drops > 1:
+                            break
+                
+                if drops > 1:
+                    possible = False
+                    break
+            
+            if possible:
+                ans += k
+                
+        return ans
